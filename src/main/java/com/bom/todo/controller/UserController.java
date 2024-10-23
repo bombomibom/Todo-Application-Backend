@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bom.todo.dto.ResponseDTO;
 import com.bom.todo.dto.UserDTO;
 import com.bom.todo.model.UserEntity;
+import com.bom.todo.security.TokenProvider;
 import com.bom.todo.service.UserService;
 
 @RestController
@@ -18,6 +19,9 @@ public class UserController {
 
 	@Autowired
 	private UserService service;
+	
+	@Autowired
+	private TokenProvider tokenProvider;
 	
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@RequestBody UserDTO dto) {
@@ -45,7 +49,11 @@ public class UserController {
 		UserEntity user = service.getByCredentials(dto.getUsername(), dto.getPassword());
 		
 		if(user != null) {
-			UserDTO responseUserDTO = new UserDTO(user);
+			final String token = tokenProvider.create(user);
+			
+			final UserDTO responseUserDTO = new UserDTO(user);
+			responseUserDTO.setToken(token);
+			
 			return ResponseEntity.ok().body(responseUserDTO);
 			
 		} else {
