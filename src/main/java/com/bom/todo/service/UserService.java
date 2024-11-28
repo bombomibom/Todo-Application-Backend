@@ -1,6 +1,7 @@
 package com.bom.todo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bom.todo.model.UserEntity;
@@ -28,7 +29,13 @@ public class UserService {
 		return repository.save(userEntity);
 	}
 	
-	public UserEntity getByCredentials(final String username, final String password) {
-		return repository.findByUsernameAndPassword(username, password);
+	public UserEntity getByCredentials(final String username, final String password,
+			final PasswordEncoder encoder) {
+		final UserEntity originalUser = repository.findByUsername(username);
+		
+		if(originalUser != null && encoder.matches(password, originalUser.getPassword())) {
+			return originalUser;
+		}
+		return null;
 	}
 }
